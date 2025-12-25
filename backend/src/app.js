@@ -9,7 +9,11 @@ const app = express();
 
 // Middleware
 // CORS allows your frontend (e.g., Live Server or local file) to talk to this backend
-app.use(cors()); 
+app.use(cors({
+  origin: '*', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Allows the server to understand JSON data sent in the request body
 app.use(express.json());
