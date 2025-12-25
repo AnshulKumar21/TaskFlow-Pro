@@ -1,0 +1,50 @@
+name: TaskFlow CI/CD
+
+on:
+  push:
+    branches: [ main ]  # Jab bhi main branch pe code push hoga, ye chalega
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm install
+
+      - name: Run Build Check
+        run: |
+          echo "Checking backend structure..."
+          if [ -f "backend/src/server.js" ]; then
+            echo "✅ Server file found."
+          else
+            echo "❌ Server file missing!"
+            exit 1
+          fi
+
+      - name: Docker Build Check
+        run: |
+          cd backend
+          docker build -t taskflow-backend:test .
+          echo "✅ Docker image built successfully."
+
+  # Ye part Render ko signal bhejta hai deploy karne ke liye
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Trigger Render Deployment
+        run: |
+          echo "CI Checks Passed! Triggering Render deployment..."
+          # Note: Render par 'Auto-Deploy' ON rakhna, toh ye step apne aap handle ho jayega.
