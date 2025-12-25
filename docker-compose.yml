@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb+srv://anshulkashyap118_db_user:mongo12345@cluster0.qkhhi4y.mongodb.net/taskflow?retryWrites=true&w=majority
+      - GMAIL_USER=anshulkashyap118@gmail.com
+      - GMAIL_PASS=cvhn kdse lkvq pfdi
+      - PORT=5000
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
