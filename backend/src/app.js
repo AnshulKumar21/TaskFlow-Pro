@@ -8,21 +8,24 @@ const authRoutes = require('./routes/authRoutes');
 const app = express();
 
 // Middleware
-// CORS allows your frontend (e.g., Live Server or local file) to talk to this backend
 app.use(cors({
   origin: '*', 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Allows the server to understand JSON data sent in the request body
 app.use(express.json());
 
-// API Routes
-// All task-related requests will start with /api/tasks
-app.use('/api/tasks', taskRoutes);
+// --- YE SECTION ADD KIYA HAI FRONTEND ERROR FIX KARNE KE LIYE ---
+app.post('/api/tasks/reminders/trigger', (req, res) => {
+    console.log("Frontend triggered a reminder check...");
+    // Cron job background mein chal rahi hai, isliye yahan sirf Success bhej rahe hain
+    res.status(200).json({ message: 'Reminder trigger received' });
+});
+// -----------------------------------------------------------
 
-// All authentication-related requests (login/signup) will start with /api/auth
+// API Routes
+app.use('/api/tasks', taskRoutes);
 app.use('/api/auth', authRoutes);
 
 // Health Check Endpoint
