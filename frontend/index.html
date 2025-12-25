@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow Pro - Smart To-Do Manager</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Auth Container -->
+    <div class="auth-container" id="authContainer">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="logo">
+            <span class="logo-icon">✓</span>
+            <span class="logo-text">TaskFlow Pro</span>
+          </div>
+          <p class="auth-subtitle">Smart task management with reminders</p>
+        </div>
+        
+        <!-- Auth Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Login</button>
+          <button class="auth-tab" data-tab="signup">Sign Up</button>
+        </div>
+        
+        <!-- Login Form -->
+        <form class="auth-form" id="loginForm">
+          <div class="input-group">
+            <label>Email or Phone Number</label>
+            <input type="text" id="loginIdentifier" placeholder="email@example.com or +1234567890" required>
+          </div>
+          <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+          </div>
+          <button type="submit" class="auth-btn">Login</button>
+          <p class="auth-link">Don't have an account? <a href="#" data-switch="signup">Sign up</a></p>
+        </form>
+        
+        <!-- Signup Form -->
+        <form class="auth-form hidden" id="signupForm">
+          <div class="input-group">
+            <label>Full Name</label>
+            <input type="text" id="signupName" placeholder="John Doe" required>
+          </div>
+          <div class="input-group">
+            <label>Email Address</label>
+            <input type="email" id="signupEmail" placeholder="email@example.com" required>
+          </div>
+          <div class="input-group">
+            <label>Phone Number (WhatsApp)</label>
+            <input type="tel" id="signupPhone" placeholder="+1234567890" required>
+          </div>
+          <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="signupPassword" placeholder="Create a strong password" required>
+          </div>
+          <div class="input-group">
+            <label>Confirm Password</label>
+            <input type="password" id="signupConfirm" placeholder="Confirm your password" required>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="enableReminders" checked>
+            <label for="enableReminders">Enable email & WhatsApp reminders</label>
+          </div>
+          <button type="submit" class="auth-btn">Create Account</button>
+          <p class="auth-link">Already have an account? <a href="#" data-switch="login">Login</a></p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="main-app hidden" id="mainApp">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <div class="logo">
+            <span class="logo-icon">✓</span>
+            <span class="logo-text">TaskFlow Pro</span>
+          </div>
+        </div>
+        <div class="header-center">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search tasks...">
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="notification-btn" id="notificationBtn" title="Notifications">
+            🔔
+            <span class="notification-badge hidden" id="notificationBadge">0</span>
+          </button>
+          <div class="user-menu">
+            <span class="user-avatar" id="userAvatar">JD</span>
+            <span class="user-name" id="userName">John Doe</span>
+            <div class="user-dropdown">
+              <a href="#" id="settingsBtn">⚙️ Settings</a>
+              <a href="#" id="reminderSettingsBtn">🔔 Reminder Settings</a>
+              <a href="#" id="logoutBtn">🚪 Logout</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Reminder Banner -->
+      <div class="reminder-banner hidden" id="reminderBanner">
+        <div class="reminder-content">
+          <span class="reminder-icon">⚡</span>
+          <span class="reminder-text" id="reminderText">You have 3 high priority tasks due today!</span>
+        </div>
+        <button class="reminder-dismiss" id="dismissBanner">×</button>
+      </div>
+
+      <!-- Today's Suggestions -->
+      <div class="suggestions-panel" id="suggestionsPanel">
+        <div class="suggestions-header">
+          <h3>📋 Today's Focus</h3>
+          <button class="collapse-btn" id="collapseSuggestions">−</button>
+        </div>
+        <div class="suggestions-content" id="suggestionsContent">
+          <div class="suggestion-cards" id="suggestionCards">
+            <!-- Suggestion cards will be dynamically added -->
+          </div>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <div class="stats-card">
+            <h3>📊 Overview</h3>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-number" id="totalTasks">0</span>
+                <span class="stat-label">Total</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number" id="completedTasks">0</span>
+                <span class="stat-label">Done</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number" id="pendingTasks">0</span>
+                <span class="stat-label">Pending</span>
+              </div>
+              <div class="stat-item urgent">
+                <span class="stat-number" id="urgentTasks">0</span>
+                <span class="stat-label">Urgent</span>
+              </div>
+            </div>
+          </div>
+
+          <nav class="filter-nav">
+            <h4>Quick Filters</h4>
+            <button class="filter-btn active" data-filter="all">📋 All Tasks</button>
+            <button class="filter-btn" data-filter="today">📅 Today</button>
+            <button class="filter-btn" data-filter="week">📆 This Week</button>
+            <button class="filter-btn" data-filter="month">🗓️ This Month</button>
+            <button class="filter-btn" data-filter="overdue">⚠️ Overdue</button>
+            <button class="filter-btn" data-filter="upcoming">🔮 Upcoming</button>
+            <button class="filter-btn" data-filter="high">🔴 High Priority</button>
+            <button class="filter-btn" data-filter="reminders">🔔 With Reminders</button>
+            <button class="filter-btn" data-filter="completed">✅ Completed</button>
+            <button class="filter-btn" data-filter="pending">⏳ Pending</button>
+          </nav>
+
+          <div class="categories-section">
+            <h4>Categories</h4>
+            <div class="category-list">
+              <button class="category-btn" data-category="work">💼 Work</button>
+              <button class="category-btn" data-category="personal">🏠 Personal</button>
+              <button class="category-btn" data-category="health">💪 Health</button>
+              <button class="category-btn" data-category="finance">💰 Finance</button>
+              <button class="category-btn" data-category="learning">📚 Learning</button>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Task Area -->
+        <main class="task-area">
+          <div class="task-header">
+            <h2 id="currentFilter">All Tasks</h2>
+            <div class="task-actions">
+              <select id="sortSelect">
+                <option value="date-asc">Date ↑</option>
+                <option value="date-desc">Date ↓</option>
+                <option value="priority">Priority</option>
+                <option value="name">Name</option>
+              </select>
+              <button class="add-task-btn" id="addTaskBtn">+ Add Task</button>
+            </div>
+          </div>
+
+          <div class="task-list" id="taskList">
+            <!-- Tasks will be dynamically added here -->
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Add/Edit Task Modal -->
+    <div class="modal hidden" id="taskModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle">Add New Task</h3>
+          <button class="modal-close" id="closeModal">×</button>
+        </div>
+        <form id="taskForm">
+          <div class="form-row">
+            <div class="input-group full">
+              <label>Task Title</label>
+              <input type="text" id="taskTitle" placeholder="Enter task title" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="input-group">
+              <label>Due Date</label>
+              <input type="date" id="taskDate" required>
+            </div>
+            <div class="input-group">
+              <label>Due Time</label>
+              <input type="time" id="taskTime">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="input-group">
+              <label>Priority</label>
+              <select id="taskPriority">
+                <option value="low">🟢 Low</option>
+                <option value="medium">🟡 Medium</option>
+                <option value="high">🔴 High</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Category</label>
+              <select id="taskCategory">
+                <option value="work">💼 Work</option>
+                <option value="personal">🏠 Personal</option>
+                <option value="health">💪 Health</option>
+                <option value="finance">💰 Finance</option>
+                <option value="learning">📚 Learning</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="input-group full">
+              <label>Description (Optional)</label>
+              <textarea id="taskDescription" placeholder="Add more details..."></textarea>
+            </div>
+          </div>
+          
+          <!-- Reminder Section -->
+          <div class="reminder-section">
+            <h4>🔔 Reminder Settings</h4>
+            <div class="reminder-options">
+              <div class="checkbox-group">
+                <input type="checkbox" id="enableTaskReminder">
+                <label for="enableTaskReminder">Enable reminder for this task</label>
+              </div>
+              <div class="reminder-details hidden" id="reminderDetails">
+                <div class="form-row">
+                  <div class="input-group">
+                    <label>Remind me</label>
+                    <select id="reminderTime">
+                      <option value="0">At due time</option>
+                      <option value="5">5 minutes before</option>
+                      <option value="15">15 minutes before</option>
+                      <option value="30">30 minutes before</option>
+                      <option value="60">1 hour before</option>
+                      <option value="1440">1 day before</option>
+                      <option value="10080">1 week before</option>
+                    </select>
+                  </div>
+                  <div class="input-group">
+                    <label>Notify via</label>
+                    <div class="notify-options">
+                      <label class="notify-option">
+                        <input type="checkbox" id="notifyBrowser" checked>
+                        <span>🔔 Browser</span>
+                      </label>
+                      <label class="notify-option">
+                        <input type="checkbox" id="notifyEmail">
+                        <span>📧 Email</span>
+                      </label>
+                      <label class="notify-option">
+                        <input type="checkbox" id="notifyWhatsapp">
+                        <span>💬 WhatsApp</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="input-group full">
+                    <label>Repeat reminder</label>
+                    <select id="reminderRepeat">
+                      <option value="none">Don't repeat</option>
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" id="cancelTask">Cancel</button>
+            <button type="submit" class="btn-primary">Save Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Reminder Settings Modal -->
+    <div class="modal hidden" id="reminderSettingsModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>🔔 Reminder Settings</h3>
+          <button class="modal-close" id="closeReminderSettings">×</button>
+        </div>
+        <div class="reminder-settings-content">
+          <div class="setting-group">
+            <h4>Notification Preferences</h4>
+            <div class="checkbox-group">
+              <input type="checkbox" id="globalBrowserNotify" checked>
+              <label for="globalBrowserNotify">Browser notifications</label>
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="globalEmailNotify" checked>
+              <label for="globalEmailNotify">Email notifications</label>
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="globalWhatsappNotify" checked>
+              <label for="globalWhatsappNotify">WhatsApp notifications</label>
+            </div>
+          </div>
+          
+          <div class="setting-group">
+            <h4>Auto-Remind High Priority Tasks</h4>
+            <div class="checkbox-group">
+              <input type="checkbox" id="autoRemindHigh" checked>
+              <label for="autoRemindHigh">Automatically set reminders for high priority tasks</label>
+            </div>
+            <div class="input-group">
+              <label>Default reminder time for high priority</label>
+              <select id="defaultHighReminder">
+                <option value="60">1 hour before</option>
+                <option value="1440" selected>1 day before</option>
+                <option value="10080">1 week before</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="setting-group">
+            <h4>Daily Summary</h4>
+            <div class="checkbox-group">
+              <input type="checkbox" id="dailySummary" checked>
+              <label for="dailySummary">Send daily task summary</label>
+            </div>
+            <div class="input-group">
+              <label>Summary time</label>
+              <input type="time" id="summaryTime" value="08:00">
+            </div>
+          </div>
+          
+          <div class="setting-group">
+            <h4>Quiet Hours</h4>
+            <div class="checkbox-group">
+              <input type="checkbox" id="quietHours">
+              <label for="quietHours">Enable quiet hours (no notifications)</label>
+            </div>
+            <div class="time-range">
+              <input type="time" id="quietStart" value="22:00">
+              <span>to</span>
+              <input type="time" id="quietEnd" value="07:00">
+            </div>
+          </div>
+          
+          <button class="btn-primary full-width" id="saveReminderSettings">Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="notification-panel hidden" id="notificationPanel">
+      <div class="notification-header">
+        <h4>Notifications</h4>
+        <button id="clearAllNotifications">Clear All</button>
+      </div>
+      <div class="notification-list" id="notificationList">
+        <!-- Notifications will be added here -->
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast hidden" id="toast">
+      <span class="toast-icon" id="toastIcon">✓</span>
+      <span class="toast-message" id="toastMessage">Task saved successfully!</span>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
