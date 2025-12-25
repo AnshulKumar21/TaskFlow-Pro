@@ -29,18 +29,16 @@ const taskList = document.getElementById('taskList');
 const toast = document.getElementById('toast');
 
 // ==================== API CONFIG ====================
-const API_BASE_URL = 'http://localhost:5000/api';
+// Yahan maine fix kiya hai: /tasks hata diya hai taaki auth aur tasks dono sahi chalein
+const API_BASE_URL = 'https://taskflow-pro-xnqc.onrender.com/api';
 
 // ==================== API-READY FUNCTIONS ====================
-// These functions now communicate with your MongoDB Backend
 
 async function fetchTasks() {
   try {
-    // API: GET /api/tasks?userId={userId}
     const response = await fetch(`${API_BASE_URL}/tasks?userId=${currentUser.id}`);
     if (!response.ok) throw new Error('Failed to fetch tasks');
     const data = await response.json();
-    // Map MongoDB _id to id for frontend compatibility
     return data.map(task => ({ ...task, id: task._id }));
   } catch (error) {
     console.error("Fetch Tasks Error:", error);
@@ -49,7 +47,6 @@ async function fetchTasks() {
 }
 
 async function createTask(taskData) {
-  // API: POST /api/tasks
   const response = await fetch(`${API_BASE_URL}/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -64,7 +61,6 @@ async function createTask(taskData) {
 }
 
 async function updateTask(id, updates) {
-  // API: PUT /api/tasks/{id}
   const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -76,7 +72,6 @@ async function updateTask(id, updates) {
 }
 
 async function deleteTask(id) {
-  // API: DELETE /api/tasks/{id}
   const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
     method: 'DELETE'
   });
@@ -85,7 +80,6 @@ async function deleteTask(id) {
 }
 
 async function registerUser(userData) {
-  // API: POST /api/auth/register
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -94,13 +88,10 @@ async function registerUser(userData) {
   
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || 'Registration failed');
-  
-  // Return user with mapped ID
   return { ...data, id: data._id };
 }
 
 async function loginUser(identifier, password) {
-  // API: POST /api/auth/login
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
