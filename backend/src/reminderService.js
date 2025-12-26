@@ -1,55 +1,51 @@
 const nodemailer = require('nodemailer');
-const cron = require('node-cron');
-const Task = require('./models/Task');
+const Task = require('./models/Task'); // Check kar lena path sahi hai na
 const User = require('./models/User');
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'anshulkashyap118@gmail.com',
-         pass: process.env.EMAIL_PASS || 'nrdkluppscumudqf'
-    }
-});
-
-cron.schedule('* * * * *', async () => {
-    // Current time ke seconds zero karo accurate matching ke liye
-    const now = new Date();
-    now.setSeconds(0, 0);
-
+const checkReminders = async () => {
     try {
-        const tasks = await Task.find({ completed: false, "reminder.enabled": true });
+        console.log("🔍 Running CheckReminders Logic...");
+        const now = new Date();
+        
+        // Uncompleted tasks dhoond raha hai jinka reminder baki hai
+        const tasks = await Task.find({ 
+            completed: false, 
+            'reminder.enabled': true,
+            'reminder.sent': { $ne: true } 
+        }).populate('user');
 
         for (const task of tasks) {
-            if (!task.userId || !task.date || !task.time || !task.reminder.email) continue;
-
-            const user = await User.findById(task.userId);
-            if (!user) continue;
-
-            // Task date aur time ko parse karo
-            const taskTime = new Date(`${task.date}T${task.time}`);
-            taskTime.setSeconds(0, 0);
-
-            // Difference in minutes
+            const taskTime = new Date(task.startTime);
             const diffInMins = Math.round((taskTime - now) / 60000);
 
-            // Match logic
-            if (diffInMins === task.reminder.beforeMinutes) {
-                const mailOptions = {
-                    from: 'anshulkashyap118@gmail.com',
-                    to: user.email,
-                    subject: `⏰ TaskFlow Reminder: ${task.title}`,
-                   text: `Hello ${user.name},\n\nThis is a reminder for your task: "${task.title}".\nDue Time: ${task.time}\nCategory: ${task.category}\n\nPlease ensure it is completed on time.\n\nRegards,\nTaskFlow Pro Team`
-                };
-
-                try {
-                    await transporter.sendMail(mailOptions);
-                    console.log(`✅ Email sent to ${user.email} for task: ${task.title}`);
-                } catch (mailErr) {
-                    console.log(`❌ Mail Error for ${user.email}:`, mailErr.message);
-                }
+            if (diffInMins <= (task.reminder.beforeMinutes || 0)) {
+                await sendEmail(task.user.email, task.title);
+                task.reminder.sent = true;
+                await task.save();
+                console.log(`✅ Email sent to ${task.user.email} for task: ${task.title}`);
             }
         }
-    } catch (err) { 
-        console.log("❌ Cron Error:", err.message); 
+    } catch (error) {
+        console.error("❌ Reminder Logic Error:", error);
     }
-});
+};
+
+const sendEmail = async (email, taskTitle) => {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'anshulkashyap118@gmail.com',
+            pass: process.env.EMAIL_PASS || 'nrdkluppscumudqf'
+        }
+    });
+
+    await transporter.sendMail({
+        from: '"TaskFlow Pro" <anshulkashyap118@gmail.com>',
+        to: email,
+        subject: `Reminder: ${taskTitle}`,
+        text: `Bhai, tera task "${taskTitle}" shuru hone wala hai. Bhulna mat!`
+    });
+};
+
+// YE SABSE ZAROORI HAI: Function export hona chahiye
+module.exports = { checkReminders };

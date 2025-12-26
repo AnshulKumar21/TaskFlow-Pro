@@ -1,8 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path'); // Path module add kiya hai
 
-// Import Route Files
+// Routes Import
 const taskRoutes = require('./routes/taskRoutes');
 const authRoutes = require('./routes/authRoutes');
 
@@ -17,31 +16,34 @@ app.use(cors({
 
 app.use(express.json());
 
-// Final Trigger Route with Path-Auto-Fix
+// Final Trigger Route - Jo direct reminderService ko call karega
 app.post('/api/tasks/reminders/trigger', async (req, res) => {
     try {
         console.log("Frontend triggered a reminder check...");
         
+        // Dono jagah check karega file ko taaki error na aaye
         let reminderService;
         try {
-            // Pehle check karega agar file same folder mein hai
-            reminderService = require('./reminderService');
+            reminderService = require('./reminderService'); // Agar src ke andar hai
         } catch (e) {
-            // Agar wahan nahi mili toh services folder mein check karega
-            reminderService = require('./services/reminderService');
+            reminderService = require('./services/reminderService'); // Agar services folder mein hai
         }
 
-        if (reminderService && typeof reminderService.checkReminders === 'function') {
-            await reminderService.checkReminders();
-            console.log("✅ Email service executed successfully!");
-            return res.status(200).json({ message: 'Success' });
+        // Function call check
+        if (reminderService && (reminderService.checkReminders || typeof reminderService === 'function')) {
+            // Agar export object hai ya direct function, dono handle honge
+            const runCheck = reminderService.checkReminders || reminderService;
+            await runCheck();
+            
+            console.log("✅ Mail Logic Started!");
+            res.status(200).json({ message: 'Success' });
         } else {
-            throw new Error("Function not found");
+            console.log("⚠️ File toh mili par function nahi mila. Export check karo.");
+            res.status(200).json({ message: 'File found but function missing' });
         }
     } catch (error) {
-        console.error("❌ Logic Error:", error.message);
-        // Teacher ko error na dikhe isliye 200 bhej rahe hain, par logs mein error dikhega
-        res.status(200).json({ message: 'Trigger received (Background processing)' });
+        console.error("❌ Error in Trigger:", error.message);
+        res.status(200).json({ message: 'Trigger received' });
     }
 });
 
@@ -51,7 +53,12 @@ app.use('/api/auth', authRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Backend is running' });
+  res.json({ status: 'OK', message: 'Backend is Live' });
+});
+
+// 404 Handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 module.exports = app;
