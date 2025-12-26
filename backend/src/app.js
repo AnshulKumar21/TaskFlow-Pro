@@ -5,6 +5,9 @@ const cors = require('cors');
 const taskRoutes = require('./routes/taskRoutes');
 const authRoutes = require('./routes/authRoutes');
 
+// Import Reminder Service (Isse mail trigger hogi)
+const reminderService = require('./services/reminderService');
+
 const app = express();
 
 // Middleware
@@ -16,13 +19,20 @@ app.use(cors({
 
 app.use(express.json());
 
-// --- YE SECTION ADD KIYA HAI FRONTEND ERROR FIX KARNE KE LIYE ---
-app.post('/api/tasks/reminders/trigger', (req, res) => {
-    console.log("Frontend triggered a reminder check...");
-    // Cron job background mein chal rahi hai, isliye yahan sirf Success bhej rahe hain
-    res.status(200).json({ message: 'Reminder trigger received' });
+// API Route for Frontend Trigger
+app.post('/api/tasks/reminders/trigger', async (req, res) => {
+    try {
+        console.log("Frontend triggered a reminder check. Calling Reminder Service...");
+        
+        // Asli mail bhejane wala function call ho raha hai
+        await reminderService.checkReminders(); 
+        
+        res.status(200).json({ message: 'Reminder check completed and email sent if due' });
+    } catch (error) {
+        console.error("Mail trigger error in app.js:", error);
+        res.status(500).json({ error: 'Internal Server Error during mail trigger' });
+    }
 });
-// -----------------------------------------------------------
 
 // API Routes
 app.use('/api/tasks', taskRoutes);
@@ -37,7 +47,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// 404 Handler for undefined routes
+// 404 Handler
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
