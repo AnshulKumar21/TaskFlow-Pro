@@ -23,7 +23,7 @@ app.post('/api/tasks/reminders/trigger', async (req, res) => {
         
         // Try to require the service inside the route to prevent boot-up crash
         try {
-            const reminderService = require('./services/reminderService');
+            const reminderService = require('./reminderService');
             if (reminderService && typeof reminderService.checkReminders === 'function') {
                 await reminderService.checkReminders();
                 console.log("✅ Reminder Service executed successfully");
